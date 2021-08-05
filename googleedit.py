@@ -85,4 +85,4 @@ def update_sheet(full_name, week_num, project_type):
                 return 0
             return 2
 
-    
+# update_sheet('Ryan',5,'Coding')

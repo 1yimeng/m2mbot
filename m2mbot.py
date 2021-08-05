@@ -9,6 +9,7 @@ from googleedit import update_sheet
 from slack_sdk import WebClient
 from dotenv import load_dotenv
 
+##### Change hardcoded channel
 load_dotenv()
 token = os.getenv("SLACK_BOT_TOKEN")
 signing_secret = os.getenv("SLACK_SIGNING_SECRET")
@@ -22,7 +23,8 @@ client = WebClient(token)
 def handle_command(body, ack, respond, client, logger):
     logger.info(body)
     # print(body)
-    channel_id = body['channel_id']
+    # global channel_id
+    # channel_id = body['channel_id']
     ack(
         text="Accepted!",
         blocks=[
@@ -131,18 +133,22 @@ def handle_view_events(ack, body, logger):
     full_name = body['view']['state']['values']['firstblock']['plain_text_input-action']['value']
     week_num = body['view']['state']['values']['secondblock']['plain_text_input-action']['value']
     project_type = body['view']['state']['values']['thirdblock']['static_select-action']['selected_option']['text']['text']
-    result = update_sheet(full_name, week_num, project_type)
-    channel_id = 'C029BUBH5T2'
-    if result == 1:
-        client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', this entry is already logged.')
-    elif result == -1:
-        client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', the spreadsheet is not found.')
-    elif result == 0:
-        client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', the attempt is failed.')
-    elif result == 2:
-        client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', your project is successfully logged.')
-    elif result == -2:
-        client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', please re-try the command, your name is not found in the spread sheet.')
+    try:
+        result = update_sheet(full_name, week_num, project_type)
+        channel_id = 'C029BUBH5T2'
+        if result == 1:
+            client.chat_postMessage(channel=channel_id, text= f'Hi {full_name}, the {project_type} project at week {week_num} is already logged.')
+        elif result == -1:
+            client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', the spreadsheet is not found.')
+        elif result == 0:
+            client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', the attempt is failed.')
+        elif result == 2:
+            client.chat_postMessage(channel=channel_id, text= f'Hi {full_name}, the {project_type} project at week {week_num} is successfully logged.')
+        elif result == -2:
+            client.chat_postMessage(channel=channel_id, text= 'Hi ' + full_name + ', please re-try the command, your name is not found in the spread sheet.')
+    except:
+        channel_id = 'C029BUBH5T2'
+        client.chat_postMessage(channel=channel_id, text= 'ERROR IN LOGGING, contact Yi Meng Wang with this issue')
 
 @app.action("static_select-action")
 def handle_some_action(ack, body, logger):
